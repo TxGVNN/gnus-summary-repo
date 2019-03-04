@@ -18,7 +18,7 @@
 (declare-function gnus-summary-article-subject 'gnus-sum)
 
 (defgroup gnus-summary-repo nil
-  "GNUS store files configuration."
+  "GNUS repo configuration."
   :group 'gnus-summary)
 
 (defcustom gnus-summary-repo-dir-local nil
@@ -47,8 +47,7 @@ if DIRECTORY non-nil, export to DIRECTORY"
       (error "%s is not directory" directory))
   (dolist (file (directory-files-recursively directory ""))
     (unless (or (file-directory-p file) (string-match "^.*\/.git.*" file))
-      (message "%s" file)
-      (sleep-for 2)
+      (message "Import %s" file)
       (gnus-summary-repo-import-file file (concat (substring
                                                    (file-name-directory (expand-file-name file))
                                                    (length (file-name-as-directory (expand-file-name directory)))
@@ -66,14 +65,15 @@ if DIRECTORY non-nil, export to DIRECTORY"
   (if (not directory)
       (setq directory (file-name-as-directory
                        (expand-file-name
-                        (read-directory-name "Select a directory to import: ")))))
+                        (read-directory-name "Select a directory to export: ")))))
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
-  (let (dir-path fullpath)
+  (let (dir-path fullpath subject)
     (dolist (article gnus-newsgroup-limit)
-      (message "%s" article)
-      (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) (gnus-summary-article-subject article))))
-      (setq fullpath (format "%s%s" dir-path (file-name-nondirectory (gnus-summary-article-subject article))))
+      (setq subject (gnus-summary-article-subject article))
+      (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
+      (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
+      (message "Export %s" subject)
       (mkdir dir-path t)
       (when (gnus-summary-repo--mail-newer-than-file article fullpath)
         (save-excursion
@@ -161,6 +161,25 @@ if DIRECTORY non-nil, export to DIRECTORY"
         (gnus-request-accept-article group nil t)
         (kill-buffer (current-buffer)))
       (setq gnus-newsgroup-active (gnus-activate-group group)))))
+
+(defun gnus-summary-repo-sync-deleted-files-base-directory (&optional directory)
+  "Delete the file on Group, when this file was deleted on local DIRECTORY."
+  (interactive)
+  (if (not (equal major-mode 'gnus-summary-mode))
+      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
+  (if (not directory)
+      (setq directory gnus-summary-repo-dir-local))
+  (if (not directory)
+      (setq directory (file-name-as-directory
+                       (expand-file-name
+                        (read-directory-name "Select a directory to export: ")))))
+  (if (file-regular-p directory)
+      (error "%s is not directory" directory))
+  (dolist (article gnus-newsgroup-limit)
+    (message "Mark %s will be deleted" (gnus-summary-article-subject article))
+    (unless (file-regular-p (expand-file-name (format "%s%s" (file-name-as-directory directory) (gnus-summary-article-subject article))))
+      (gnus-summary-mark-article article gnus-canceled-mark))))
+
 
 (defun gnus-summary-repo--mail-newer-than-file(article file &optional reverse)
   "Compare date of ARTICLE newer than FILE.
