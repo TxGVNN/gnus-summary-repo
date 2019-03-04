@@ -47,7 +47,6 @@ if DIRECTORY non-nil, export to DIRECTORY"
       (error "%s is not directory" directory))
   (dolist (file (directory-files-recursively directory ""))
     (unless (or (file-directory-p file) (string-match "^.*\/.git.*" file))
-      (message "Import %s" file)
       (gnus-summary-repo-import-file file (concat (substring
                                                    (file-name-directory (expand-file-name file))
                                                    (length (file-name-as-directory (expand-file-name directory)))
@@ -73,9 +72,9 @@ if DIRECTORY non-nil, export to DIRECTORY"
       (setq subject (gnus-summary-article-subject article))
       (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
       (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
-      (message "Export %s" subject)
       (mkdir dir-path t)
       (when (gnus-summary-repo--mail-newer-than-file article fullpath)
+        (message "Export %s" subject)
         (save-excursion
           (gnus-summary-display-article article nil)
           (gnus-summary-select-article-buffer)
@@ -115,7 +114,7 @@ if DIRECTORY non-nil, export to DIRECTORY"
           (if (or (> (length articles) 1) (gnus-summary-repo--mail-newer-than-file (car articles) file t))
               (progn()
                     (setq not-deleted (gnus-request-expire-articles
-                                       articles gnus-newsgroup-name 'force))
+                                       (make-list 1 (car articles)) gnus-newsgroup-name 'force))
                     (gnus-summary-remove-process-mark (car articles))
                     ;; The backend might not have been able to delete the article
                     ;; after all.
@@ -131,6 +130,7 @@ if DIRECTORY non-nil, export to DIRECTORY"
 
     ;; Add new one
     (when not-newer
+      (message "Import %s" file)
       (with-current-buffer (gnus-get-buffer-create " *import file*")
         (erase-buffer)
         (insert subject)
