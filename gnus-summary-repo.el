@@ -79,7 +79,8 @@ if DIRECTORY non-nil, export to DIRECTORY"
           (gnus-summary-display-article article nil)
           (gnus-summary-select-article-buffer)
           (goto-char (point-min))
-          (when (search-forward "\nattachment: " nil t)
+          (when (search-forward "\nattachment:" nil t)
+            (widget-forward 1)
             (let ((data (get-text-property (point) 'gnus-data)))
               (when data
                 (if (file-exists-p fullpath)
@@ -135,7 +136,7 @@ if DIRECTORY non-nil, export to DIRECTORY"
         (erase-buffer)
         (insert subject)
         (mml-insert-empty-tag 'part
-                              'type "text/plain"
+                              'type "application/octet-stream"
                               'filename (substring-no-properties file)
                               'disposition "attachment"
                               'description subject)
