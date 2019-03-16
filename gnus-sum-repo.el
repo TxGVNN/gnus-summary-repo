@@ -1,9 +1,9 @@
-;;; gnus-summary-repo.el --- Import and export files between IMAP and local by using GNUS -*- lexical-binding: t -*-
+;;; gnus-sum-repo.el --- Import and export files between IMAP and local by using GNUS -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019 Giap Tran <txgvnn@gmail.com>
 
 ;; Author: Giap Tran <txgvnn@gmail.com>
-;; URL: https://github.com/TxGVNN/gnus-summary-repo
+;; URL: https://github.com/TxGVNN/gnus-sum-repo
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "25"))
 
@@ -67,25 +67,51 @@ if DIRECTORY non-nil, export to DIRECTORY"
                         (read-directory-name "Select a directory to export: ")))))
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
+  (dolist (article gnus-newsgroup-limit)
+    (gnus-summary-repo--export-file article directory)))
+
+(defun gnus-summary-repo-export-file (n &optional directory)
+  "Export the attachment in article to DIRECTORY.
+If N is a positive number, save the N next articles.
+If N is a negative number, save the N previous articles.
+If N is nil, export at."
+  (interactive "p")
+  (if (not (equal major-mode 'gnus-summary-mode))
+      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
+  (if (not directory)
+      (setq directory gnus-summary-repo-dir-local))
+  (if (not directory)
+      (setq directory (file-name-as-directory
+                       (expand-file-name
+                        (read-directory-name "Select a directory to export: ")))))
+  (if (file-regular-p directory)
+      (error "%s is not directory" directory))
+  (let* ((articles (gnus-summary-work-articles n)))
+    (dolist (article articles)
+      (gnus-summary-repo--export-file article directory))))
+
+(defun gnus-summary-repo--export-file (article directory)
+  "Export an attachment in an ARTICLE to a DIRECTORY."
+  (if (not (equal major-mode 'gnus-summary-mode))
+      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
   (let (dir-path fullpath subject)
-    (dolist (article gnus-newsgroup-limit)
-      (setq subject (gnus-summary-article-subject article))
-      (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
-      (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
-      (mkdir dir-path t)
-      (when (gnus-summary-repo--mail-newer-than-file article fullpath)
-        (message "Export %s" subject)
-        (save-excursion
-          (gnus-summary-display-article article nil)
-          (gnus-summary-select-article-buffer)
-          (goto-char (point-min))
-          (when (search-forward "\nattachment:" nil t)
-            (widget-forward 1)
-            (let ((data (get-text-property (point) 'gnus-data)))
-              (when data
-                (if (file-exists-p fullpath)
-                    (delete-file fullpath))
-                (mm-save-part-to-file data fullpath)))))))))
+    (setq subject (gnus-summary-article-subject article))
+    (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
+    (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
+    (mkdir dir-path t)
+    (when (gnus-summary-repo--mail-newer-than-file article fullpath)
+      (message "Export %s" subject)
+      (save-excursion
+        (gnus-summary-display-article article nil)
+        (gnus-summary-select-article-buffer)
+        (goto-char (point-min))
+        (when (search-forward "\nattachment:" nil t)
+          (widget-forward 1)
+          (let ((data (get-text-property (point) 'gnus-data)))
+            (when data
+              (if (file-exists-p fullpath)
+                  (delete-file fullpath))
+              (mm-save-part-to-file data fullpath))))))))
 
 (defun gnus-summary-repo-import-file (&optional file subject)
   "Import an arbitrary FILE with SUBJECT into a mail newsgroup."
