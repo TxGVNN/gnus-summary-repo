@@ -225,6 +225,6 @@ If REVERSE is non-nil, reverse the result."
               (> mail-modifation-time file-modifation-time)))))
     (if reverse nil t)))
 
-(provide 'gnus-summary-repo)
+(provide 'gnus-sum-repo)
 
-;;; gnus-summary-repo.el ends here
+;;; gnus-sum-repo.el ends here

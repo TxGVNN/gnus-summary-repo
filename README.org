@@ -1,10 +1,11 @@
 * Story
-In someday, I join a IT company that is the first outsourcing company I work.
-They have many policies to protect the products. I'm not allowed to store anythings in the internet service.
-It's fine, but they dont provide the storage services for employees.
+Someday, I join an IT company that is the first outsourcing company I work.
+They have many policies to protect the products. I'm not allowed to store anything in the internet service.
+It's fine, but they also don't provide the storage services for employees.
 
-I need to store my notes, my tips around work. Good, I found a solution to store my stuff. All of company will provide to you an email account.
-IMAP, that's it, (APPEND Command) https://tools.ietf.org/html/rfc3501#section-6.3.11 can handle this.
+I need to store my notes,tips around work. Good, I found a solution to store my stuff. All of the company will provide to you an email account.
+
+IMAP, that's it (~APPEND~ Command) https://tools.ietf.org/html/rfc3501#section-6.3.11 can handle this.
 
 * How did I implenment?
 
@@ -16,11 +17,13 @@ I use GNUS to work around email. This is why I have this package.
 
 * Usage
 
-~M-x gnus-summary-repo-import-directory~  Import all files in a directory
+~M-x gnus-summary-repo-import-directory~  Import all files from a directory.
 
-~M-x gnus-summary-repo-export-directory~  Export all files to a directory
+~M-x gnus-summary-repo-export-directory~  Export all files to a directory.
 
-~M-x gnus-summary-repo-import-file~  Import a files to a directory
+~M-x gnus-summary-repo-import-file~  Import a file to a Summary.
+
+~M-x gnus-summary-repo-export-file~  Export a file to a directory.
 
 
 *** Customize
@@ -29,6 +32,7 @@ I use GNUS to work around email. This is why I have this package.
 (setq gnus-summary-repo-dir-local nil)
 #+END_SRC
 
-* Roadmap
-** TODO (defcustom gnus-summary-repo-import-ignore ...)
-   A regex list like ~.gitignore~
+#+BEGIN_SRC elisp
+;; Set your FROM header, If is nil, it will be an importing date
+(setq gnus-summary-repo-header-from nil)
+#+END_SRC
