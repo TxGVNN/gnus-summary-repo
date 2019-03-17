@@ -1,3 +1,6 @@
+[[https://github.com/melpa/melpa/pull/6078][https://img.shields.io/badge/MELPA-queue-blueviolet.svg]]
+[[http://www.gnu.org/licenses/gpl-3.0.html][http://img.shields.io/:license-gpl3-blue.svg]]
+
 * Story
 Someday, I join an IT company that is the first outsourcing company I work.
 They have many policies to protect the products. I'm not allowed to store anything in the internet service.
@@ -13,7 +16,7 @@ I use GNUS to work around email. This is why I have this package.
 
 [[https://user-images.githubusercontent.com/9713793/54472395-875e2180-47fa-11e9-813a-ec08d6aeb1ac.png]]
 
-~gnus-sum-repo~ will check which article or file are newer before import or export
+~gnus-summary-repo~ will check which article or file are newer before import or export
 
 * Usage
 

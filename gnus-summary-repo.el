@@ -3,7 +3,7 @@
 ;; Copyright (C) 2019 Giap Tran <txgvnn@gmail.com>
 
 ;; Author: Giap Tran <txgvnn@gmail.com>
-;; URL: https://github.com/TxGVNN/gnus-sum-repo
+;; URL: https://github.com/TxGVNN/gnus-summary-repo
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "25"))
 
