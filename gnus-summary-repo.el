@@ -1,4 +1,4 @@
-;;; gnus-sum-repo.el --- Import and export files between IMAP and local by using GNUS -*- lexical-binding: t -*-
+;;; gnus-summary-repo.el --- Import and export files between IMAP and local by using GNUS -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019 Giap Tran <txgvnn@gmail.com>
 
@@ -225,6 +225,6 @@ If REVERSE is non-nil, reverse the result."
               (> mail-modifation-time file-modifation-time)))))
     (if reverse nil t)))
 
-(provide 'gnus-sum-repo)
+(provide 'gnus-summary-repo)
 
-;;; gnus-sum-repo.el ends here
+;;; gnus-summary-repo.el ends here
