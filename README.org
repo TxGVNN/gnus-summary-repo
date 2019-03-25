@@ -28,7 +28,16 @@ I use GNUS to work around email. This is why I have this package.
 
 ~M-x gnus-summary-repo-export-file~  Export a file to a directory.
 
+*** Best practice
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; 1. Create a new group IMAP for only store your notes.
+;; Example: nnimap+Gmail:Notes
 
+;; 2. Go to your group with all of the articles (unlimited articles, you will be Summary mode)
+
+;; 3. Use gnus-summary-repo-* function
+
+#+END_SRC
 *** Customize
 #+BEGIN_SRC elisp
 ;; Set your default directory
@@ -39,3 +48,9 @@ I use GNUS to work around email. This is why I have this package.
 ;; Set your FROM header, If is nil, it will be an importing date
 (setq gnus-summary-repo-header-from nil)
 #+END_SRC
+
+* Issues
+- Not yet support ignore files
+- Not yet support multiple repositories
+- You must manually enter Summary mode.
+- If you limit the articles, the summary-repo-* does not know the remaining articles.
