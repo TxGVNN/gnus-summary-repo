@@ -39,7 +39,8 @@
 
 (defun gnus-summary-repo-import-directory (&optional directory)
   "Import files in a folder to Group Imap.
-if DIRECTORY non-nil, export to DIRECTORY"
+if DIRECTORY non-nil, export to DIRECTORY
+It only affects on current summary buffer."
   (interactive)
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
@@ -61,7 +62,8 @@ if DIRECTORY non-nil, export to DIRECTORY"
 
 (defun gnus-summary-repo-export-directory (&optional directory)
   "Export files Group Imap to a folder.
-if DIRECTORY non-nil, export to DIRECTORY"
+if DIRECTORY non-nil, export to DIRECTORY
+It only affects on current summary buffer"
   (interactive)
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
@@ -230,6 +232,18 @@ If REVERSE is non-nil, reverse the result."
                 (< mail-modifation-time file-modifation-time)
               (> mail-modifation-time file-modifation-time)))))
     (if reverse nil t)))
+
+(defun gnus-summary-repo-import-directory-all (&optional directory)
+  "Rescan summary group before call gnus-summary-repo-import-directory DIRECTORY."
+  (interactive)
+  (gnus-summary-rescan-group 9999)
+  (gnus-summary-repo-import-directory directory))
+
+(defun gnus-summary-repo-export-directory-all (&optional directory)
+  "Rescan summary group before call gnus-summary-repo-export-directory DIRECTORY."
+  (interactive)
+  (gnus-summary-rescan-group 9999)
+  (gnus-summary-repo-export-directory directory))
 
 (provide 'gnus-summary-repo)
 

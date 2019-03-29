@@ -20,13 +20,16 @@ I use GNUS to work around email. This is why I have this package.
 
 * Usage
 
-~M-x gnus-summary-repo-import-directory~  Import all files from a directory.
+~M-x gnus-summary-repo-import-directory~  Import all files from a directory to the current Summary.
 
-~M-x gnus-summary-repo-export-directory~  Export all files to a directory.
+~M-x gnus-summary-repo-export-directory~  Export all files in the current Summary to a directory.
 
-~M-x gnus-summary-repo-import-file~  Import a file to a Summary.
+~M-x gnus-summary-repo-import-file~  Import a file to the current Summary.
 
-~M-x gnus-summary-repo-export-file~  Export a file to a directory.
+~M-x gnus-summary-repo-export-file~  Export a file in the current Summary to a directory.
+
+~M-x gnus-summary-repo-import-directory-all~  Rescan 9999 articles before importing
+~M-x gnus-summary-repo-export-directory-all~  Rescan 9999 articles before exporting
 
 *** Best practice
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -53,4 +56,3 @@ I use GNUS to work around email. This is why I have this package.
 - Not yet support ignore files
 - Not yet support multiple repositories
 - You must manually enter Summary mode.
-- If you limit the articles, the summary-repo-* does not know the remaining articles.
