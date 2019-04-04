@@ -52,6 +52,11 @@ I use GNUS to work around email. This is why I have this package.
 (setq gnus-summary-repo-header-from nil)
 #+END_SRC
 
+#+BEGIN_SRC elisp
+;; The regex list will be ignored when importing, default include .git/ directory
+(setq gnus-summary-repo-import-ignore '("^\.git.*"))
+#+END_SRC
+
 * Issues
 - Not yet support ignore files
 - Not yet support multiple repositories

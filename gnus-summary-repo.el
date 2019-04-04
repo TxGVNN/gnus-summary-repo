@@ -57,13 +57,13 @@ It only affects on current summary buffer."
                         (read-directory-name "Select a directory to import: ")))))
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
-  (dolist (file (directory-files-recursively directory ""))
-    (unless (or (file-directory-p file) (string-match-in-list-p file gnus-summary-repo-import-ignore))
-      (gnus-summary-repo-import-file file (concat (substring
-                                                   (file-name-directory (expand-file-name file))
-                                                   (length (file-name-as-directory (expand-file-name directory)))
-                                                   nil)
-                                                  (file-name-nondirectory file))))))
+  (let* ((directory-length (length (file-name-as-directory (expand-file-name directory))))
+         subject)
+    (dolist (file (directory-files-recursively directory ""))
+      (setq subject (concat (substring (file-name-directory (expand-file-name file)) directory-length nil)
+                            (file-name-nondirectory file)))
+      (unless (or (file-directory-p file) (string-match-in-list-p subject gnus-summary-repo-import-ignore))
+        (gnus-summary-repo-import-file file subject)))))
 
 (defun gnus-summary-repo-export-directory (&optional directory)
   "Export files Group Imap to a folder.
@@ -255,7 +255,7 @@ If REVERSE is non-nil, reverse the result."
   (catch 'tag
     (mapc
      (lambda (x)
-       (when (string-match x str ) (throw 'tag t)))
+       (when (string-match x str) (throw 'tag t)))
      list-of-string) nil))
 
 (provide 'gnus-summary-repo)
