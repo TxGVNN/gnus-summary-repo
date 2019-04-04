@@ -37,6 +37,11 @@
   :group 'gnus-summary-repo
   :type 'string)
 
+(defcustom gnus-summary-repo-import-ignore '("^\.git.*")
+  "The regex list will be ignored when importing."
+  :group 'gnus-summary-repo
+  :type 'list)
+
 (defun gnus-summary-repo-import-directory (&optional directory)
   "Import files in a folder to Group Imap.
 if DIRECTORY non-nil, export to DIRECTORY
@@ -53,7 +58,7 @@ It only affects on current summary buffer."
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
   (dolist (file (directory-files-recursively directory ""))
-    (unless (or (file-directory-p file) (string-match "^.*\/.git.*" file))
+    (unless (or (file-directory-p file) (string-match-in-list-p file gnus-summary-repo-import-ignore))
       (gnus-summary-repo-import-file file (concat (substring
                                                    (file-name-directory (expand-file-name file))
                                                    (length (file-name-as-directory (expand-file-name directory)))
@@ -244,6 +249,14 @@ If REVERSE is non-nil, reverse the result."
   (interactive)
   (gnus-summary-rescan-group 9999)
   (gnus-summary-repo-export-directory directory))
+
+(defun string-match-in-list-p (str list-of-string)
+  "Match STR in LIST-OF-STRING."
+  (catch 'tag
+    (mapc
+     (lambda (x)
+       (when (string-match x str ) (throw 'tag t)))
+     list-of-string) nil))
 
 (provide 'gnus-summary-repo)
 
