@@ -60,3 +60,4 @@ I use GNUS to work around email. This is why I have this package.
 * Issues
 - Not yet support multiple repositories
 - You must manually enter Summary mode.
+- You must rescan Summary after importing/exporting

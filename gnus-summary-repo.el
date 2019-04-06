@@ -42,6 +42,9 @@
   :group 'gnus-summary-repo
   :type 'list)
 
+(defvar gnus-summary-repo-file-hash-cache nil)
+(setq gnus-summary-repo-file-hash-cache (make-hash-table :test 'equal))
+
 (defun gnus-summary-repo-import-directory (&optional directory)
   "Import files in a folder to Group Imap.
 if DIRECTORY non-nil, export to DIRECTORY
@@ -62,7 +65,7 @@ It only affects on current summary buffer."
     (dolist (file (directory-files-recursively directory ""))
       (setq subject (concat (substring (file-name-directory (expand-file-name file)) directory-length nil)
                             (file-name-nondirectory file)))
-      (unless (or (file-directory-p file) (string-match-in-list-p subject gnus-summary-repo-import-ignore))
+      (unless (or (file-directory-p file) (gnus-summary-repo--string-match-in-list-p subject gnus-summary-repo-import-ignore))
         (gnus-summary-repo-import-file file subject)))))
 
 (defun gnus-summary-repo-export-directory (&optional directory)
@@ -147,7 +150,7 @@ If N is nil, export at."
         (error "Can't read %s" file))
 
     ;; Delete the outdated files
-    (let ((articles (gnus-summary-find-matching "subject" (format "^%s$" subject) 'all nil nil nil))
+    (let ((articles (gnus-summary-find-matching "subject" (format "^%s$" (regexp-quote subject)) 'all nil nil nil))
           (nnmail-expiry-target 'delete) not-deleted)
       (save-excursion
         (while articles
@@ -198,7 +201,7 @@ If N is nil, export at."
           (insert "From: " header-from "\n"
                   "Subject: " subject "\n"
                   "Date: " (message-make-date (nth 5 atts)) "\n"
-                  "Hash: " (md5 file) "\n\n"))
+                  "Hash: " (gnus-summary-repo--md5-file file) "\n\n"))
         (gnus-request-accept-article group nil t)
         (kill-buffer (current-buffer)))
       (setq gnus-newsgroup-active (gnus-activate-group group)))))
@@ -238,12 +241,12 @@ If REVERSE is non-nil, reverse the result."
           (if (search-forward "\ndate:" nil t)
               (setq article-modifation-time (truncate (time-to-seconds (mail-header-parse-date (nnheader-header-value))))))
           (setq mail-hash "")
-          (setq file-hash (md5-file file))
+          (setq file-hash (gnus-summary-repo--md5-file file t))
           ;; Get MD5 hash in header
           (goto-char (point-min))
           (if (search-forward "\nhash:" nil t)
               (setq mail-hash (substring-no-properties (nnheader-header-value))))
-          ;; Compare
+          ;; Comparing
           (if (string= mail-hash file-hash) nil
             (if reverse
                 (< article-modifation-time file-modifation-time)
@@ -262,7 +265,7 @@ If REVERSE is non-nil, reverse the result."
   (gnus-summary-rescan-group 9999)
   (gnus-summary-repo-export-directory directory))
 
-(defun string-match-in-list-p (str list-of-string)
+(defun gnus-summary-repo--string-match-in-list-p (str list-of-string)
   "Match STR in LIST-OF-STRING."
   (catch 'tag
     (mapc
@@ -270,10 +273,13 @@ If REVERSE is non-nil, reverse the result."
        (when (string-match x str) (throw 'tag t)))
      list-of-string) nil))
 
-(defun md5-file (file)
-  "Get md5 hash of FILE."
-  (with-temp-buffer (insert-file-contents-literally file)
-                    (md5 (buffer-string))))
+(defun gnus-summary-repo--md5-file (file &optional force)
+  "Get md5 hash of FILE.
+Recalculate if FORCE is not nil."
+  (if (or force (not (gethash file gnus-summary-repo-file-hash-cache)))
+      (puthash file (with-temp-buffer (insert-file-contents-literally file)
+                                      (md5 (buffer-string))) gnus-summary-repo-file-hash-cache)
+    (gethash file gnus-summary-repo-file-hash-cache)))
 
 (provide 'gnus-summary-repo)
 
