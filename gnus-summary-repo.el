@@ -112,7 +112,7 @@ If N is nil, export at."
     (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
     (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
     (mkdir dir-path t)
-    (when (gnus-summary-repo--mail-newer-than-file article fullpath)
+    (when (gnus-summary-repo--article-newer-than-file article fullpath)
       (message "Export %s" subject)
       (save-excursion
         (gnus-summary-display-article article nil)
@@ -151,7 +151,7 @@ If N is nil, export at."
           (nnmail-expiry-target 'delete) not-deleted)
       (save-excursion
         (while articles
-          (if (or (> (length articles) 1) (gnus-summary-repo--mail-newer-than-file (car articles) file t))
+          (if (or (> (length articles) 1) (gnus-summary-repo--article-newer-than-file (car articles) file t))
               (progn()
                     (setq not-deleted (gnus-request-expire-articles
                                        (make-list 1 (car articles)) gnus-newsgroup-name 'force))
@@ -197,7 +197,8 @@ If N is nil, export at."
               (setq header-from (format-time-string "<%y-%m-%d@%H:%M>" (time-to-seconds))))
           (insert "From: " header-from "\n"
                   "Subject: " subject "\n"
-                  "Date: " (message-make-date (nth 5 atts)) "\n\n"))
+                  "Date: " (message-make-date (nth 5 atts)) "\n"
+                  "Hash: " (md5 file) "\n\n"))
         (gnus-request-accept-article group nil t)
         (kill-buffer (current-buffer)))
       (setq gnus-newsgroup-active (gnus-activate-group group)))))
@@ -221,21 +222,32 @@ If N is nil, export at."
       (gnus-summary-mark-article article gnus-canceled-mark))))
 
 
-(defun gnus-summary-repo--mail-newer-than-file(article file &optional reverse)
+(defun gnus-summary-repo--article-newer-than-file (article file &optional reverse)
   "Compare date of ARTICLE newer than FILE.
 If REVERSE is non-nil, reverse the result."
   (if (file-exists-p file)
-      (let (mail-modifation-time file-modifation-time)
+      (let (article-modifation-time file-modifation-time mail-hash file-hash)
         (save-excursion
           (gnus-summary-display-article article nil)
           (gnus-summary-select-article-buffer)
+          (gnus-summary-show-all-headers)
+          (setq article-modifation-time 0)
+          (setq file-modifation-time (truncate (time-to-seconds (file-attribute-modification-time (file-attributes file)))))
+          ;; Get date in header
           (goto-char (point-min))
-          (when (search-forward "\ndate:" nil t)
-            (setq mail-modifation-time (truncate (time-to-seconds (mail-header-parse-date (nnheader-header-value)))))
-            (setq file-modifation-time (truncate (time-to-seconds (file-attribute-modification-time (file-attributes file)))))
+          (if (search-forward "\ndate:" nil t)
+              (setq article-modifation-time (truncate (time-to-seconds (mail-header-parse-date (nnheader-header-value))))))
+          (setq mail-hash "")
+          (setq file-hash (md5-file file))
+          ;; Get MD5 hash in header
+          (goto-char (point-min))
+          (if (search-forward "\nhash:" nil t)
+              (setq mail-hash (substring-no-properties (nnheader-header-value))))
+          ;; Compare
+          (if (string= mail-hash file-hash) nil
             (if reverse
-                (< mail-modifation-time file-modifation-time)
-              (> mail-modifation-time file-modifation-time)))))
+                (< article-modifation-time file-modifation-time)
+              (> article-modifation-time file-modifation-time)))))
     (if reverse nil t)))
 
 (defun gnus-summary-repo-import-directory-all (&optional directory)
@@ -257,6 +269,11 @@ If REVERSE is non-nil, reverse the result."
      (lambda (x)
        (when (string-match x str) (throw 'tag t)))
      list-of-string) nil))
+
+(defun md5-file (file)
+  "Get md5 hash of FILE."
+  (with-temp-buffer (insert-file-contents-literally file)
+                    (md5 (buffer-string))))
 
 (provide 'gnus-summary-repo)
 

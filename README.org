@@ -16,7 +16,7 @@ I use GNUS to work around email. This is why I have this package.
 
 [[https://user-images.githubusercontent.com/9713793/54472395-875e2180-47fa-11e9-813a-ec08d6aeb1ac.png]]
 
-~gnus-summary-repo~ will check which article or file are newer before import or export
+~gnus-summary-repo~ will check which article or file are newer before importing/exporting base on creation date and MD5 hash
 
 * Usage
 
@@ -58,6 +58,5 @@ I use GNUS to work around email. This is why I have this package.
 #+END_SRC
 
 * Issues
-- Not yet support ignore files
 - Not yet support multiple repositories
 - You must manually enter Summary mode.
