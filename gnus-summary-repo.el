@@ -141,7 +141,7 @@ If N is nil, export at."
   (if (not (file-name-absolute-p file))
       (error "%s is not absolute path" file))
   (let ((group gnus-newsgroup-name)
-        atts not-newer header-from)
+        atts not-newer header-from group-art)
     (setq not-newer t)
     (unless (gnus-check-backend-function 'request-accept-article group)
       (error "%s does not support article importing" group))
@@ -183,28 +183,21 @@ If N is nil, export at."
                               'disposition "attachment"
                               'description subject)
         (goto-char (point-min))
-        (if (nnheader-article-p)
-            (save-restriction
-              (goto-char (point-min))
-              (search-forward "\n\n" nil t)
-              (narrow-to-region (point-min) (1- (point)))
-              (goto-char (point-min))
-              (unless (re-search-forward "^date:" nil t)
-                (goto-char (point-max))
-                (setq atts (file-attributes file))
-                (insert "Date: " (message-make-date (nth 5 atts)) "\n")))
-          ;; This doesn't look like an article, so we fudge some headers.
-          (setq atts (file-attributes file))
-          (setq header-from gnus-summary-repo-header-from)
-          (if (not header-from)
-              (setq header-from (format-time-string "<%y-%m-%d@%H:%M>" (time-to-seconds))))
-          (insert "From: " header-from "\n"
-                  "Subject: " subject "\n"
-                  "Date: " (message-make-date (nth 5 atts)) "\n"
-                  "Hash: " (gnus-summary-repo--md5-file file) "\n\n"))
-        (gnus-request-accept-article group nil t)
+        ;; This doesn't look like an article, so we fudge some headers.
+        (setq atts (file-attributes file))
+        (setq header-from gnus-summary-repo-header-from)
+        (if (not header-from)
+            (setq header-from (format-time-string "<%y-%m-%d@%H:%M>" (time-to-seconds))))
+        (goto-char (point-min))
+        (insert "From: " header-from "\n"
+                "Subject: " subject "\n"
+                "Date: " (message-make-date (nth 5 atts)) "\n"
+                "Hash: " (gnus-summary-repo--md5-file file) "\n\n")
+        (setq group-art (gnus-request-accept-article group nil t))
         (kill-buffer (current-buffer)))
-      (setq gnus-newsgroup-active (gnus-activate-group group)))))
+      (setq gnus-newsgroup-active (gnus-activate-group group))
+      (forward-line 1)
+      (gnus-summary-goto-article (cdr group-art) nil t))))
 
 (defun gnus-summary-repo-sync-deleted-files-base-directory (&optional directory)
   "Delete the file on Group, when this file was deleted on local DIRECTORY."
