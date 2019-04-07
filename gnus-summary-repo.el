@@ -54,6 +54,9 @@ It only affects on current summary buffer."
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
 
+  (if (not (file-directory-p directory))
+      (error "%s is not directory" directory))
+
   (let* ((directory-length (length (file-name-as-directory (expand-file-name directory))))
          subject)
     (dolist (file (directory-files-recursively directory ""))
@@ -72,6 +75,9 @@ It only affects on current summary buffer"
 
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
+
+  (if (file-regular-p directory)
+      (error "%s is not directory" directory))
 
   (dolist (article gnus-newsgroup-limit)
     (gnus-summary-repo--export-file article directory)))
