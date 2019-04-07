@@ -21,8 +21,6 @@
 
 (require 'gnus-sum)
 
-(declare-function gnus-summary-article-subject 'gnus-sum)
-
 (defgroup gnus-summary-repo nil
   "GNUS repo configuration."
   :group 'gnus-summary)
@@ -49,17 +47,13 @@
   "Import files in a folder to Group Imap.
 if DIRECTORY non-nil, export to DIRECTORY
 It only affects on current summary buffer."
-  (interactive)
+  (interactive
+   (list (or gnus-summary-repo-dir-local
+             (read-directory-name "Select a directory to import: "))))
+
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
-  (if (not directory)
-      (setq directory gnus-summary-repo-dir-local))
-  (if (not directory)
-      (setq directory (file-name-as-directory
-                       (expand-file-name
-                        (read-directory-name "Select a directory to import: ")))))
-  (if (file-regular-p directory)
-      (error "%s is not directory" directory))
+
   (let* ((directory-length (length (file-name-as-directory (expand-file-name directory))))
          subject)
     (dolist (file (directory-files-recursively directory ""))
@@ -72,17 +66,13 @@ It only affects on current summary buffer."
   "Export files Group Imap to a folder.
 if DIRECTORY non-nil, export to DIRECTORY
 It only affects on current summary buffer"
-  (interactive)
+  (interactive
+   (list (or gnus-summary-repo-dir-local
+             (read-directory-name "Select a directory to export: "))))
+
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
-  (if (not directory)
-      (setq directory gnus-summary-repo-dir-local))
-  (if (not directory)
-      (setq directory (file-name-as-directory
-                       (expand-file-name
-                        (read-directory-name "Select a directory to export: ")))))
-  (if (file-regular-p directory)
-      (error "%s is not directory" directory))
+
   (dolist (article gnus-newsgroup-limit)
     (gnus-summary-repo--export-file article directory)))
 
@@ -131,15 +121,12 @@ If N is nil, export at."
 
 (defun gnus-summary-repo-import-file (&optional file subject)
   "Import an arbitrary FILE with SUBJECT into a mail newsgroup."
-  (interactive)
-  (if (not (equal major-mode 'gnus-summary-mode))
-      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
-  (if (not file)
-      (setq file (expand-file-name (read-file-name "Select a file to import: "))))
-  (if (not subject)
-      (setq subject (read-string "Select a file to import: " (file-name-nondirectory file))))
+  (interactive
+   (list (read-file-name "Select a fille to import: ")))
   (if (not (file-name-absolute-p file))
       (error "%s is not absolute path" file))
+  (if (not subject)
+      (setq subject (read-string "The subject: " (file-name-nondirectory file))))
   (let ((group gnus-newsgroup-name)
         atts not-newer header-from group-art)
     (setq not-newer t)
