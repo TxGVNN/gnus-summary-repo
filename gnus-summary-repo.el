@@ -241,13 +241,17 @@ If REVERSE is non-nil, reverse the result."
 
 (defun gnus-summary-repo-import-directory-all (&optional directory)
   "Rescan summary group before call `gnus-summary-repo-import-directory' DIRECTORY."
-  (interactive)
+  (interactive
+      (list (or gnus-summary-repo-dir-local
+             (read-directory-name "Select a directory to import: "))))
   (gnus-summary-rescan-group 9999)
   (gnus-summary-repo-import-directory directory))
 
 (defun gnus-summary-repo-export-directory-all (&optional directory)
   "Rescan summary group before call `gnus-summary-repo-export-directory' DIRECTORY."
-  (interactive)
+  (interactive
+      (list (or gnus-summary-repo-dir-local
+             (read-directory-name "Select a directory to export: "))))
   (gnus-summary-rescan-group 9999)
   (gnus-summary-repo-export-directory directory))
 
