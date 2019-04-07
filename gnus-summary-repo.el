@@ -222,17 +222,17 @@ If N is nil, export at."
   "Compare date of ARTICLE newer than FILE.
 If REVERSE is non-nil, reverse the result."
   (if (file-exists-p file)
-      (let (article-modifation-time file-modifation-time mail-hash file-hash)
+      (let (article-modification-time file-modification-time mail-hash file-hash)
         (save-excursion
           (gnus-summary-display-article article nil)
           (gnus-summary-select-article-buffer)
           (gnus-summary-show-all-headers)
-          (setq article-modifation-time 0)
-          (setq file-modifation-time (truncate (time-to-seconds (file-attribute-modification-time (file-attributes file)))))
+          (setq article-modification-time 0)
+          (setq file-modification-time (truncate (time-to-seconds (file-attribute-modification-time (file-attributes file)))))
           ;; Get date in header
           (goto-char (point-min))
           (if (search-forward "\ndate:" nil t)
-              (setq article-modifation-time (truncate (time-to-seconds (mail-header-parse-date (nnheader-header-value))))))
+              (setq article-modification-time (truncate (time-to-seconds (mail-header-parse-date (nnheader-header-value))))))
           (setq mail-hash "")
           (setq file-hash (gnus-summary-repo--md5-file file t))
           ;; Get MD5 hash in header
@@ -242,8 +242,8 @@ If REVERSE is non-nil, reverse the result."
           ;; Comparing
           (if (string= mail-hash file-hash) nil
             (if reverse
-                (< article-modifation-time file-modifation-time)
-              (> article-modifation-time file-modifation-time)))))
+                (< article-modification-time file-modification-time)
+              (> article-modification-time file-modification-time)))))
     (if reverse nil t)))
 
 (defun gnus-summary-repo-import-directory-all (&optional directory)
