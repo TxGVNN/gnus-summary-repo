@@ -6,6 +6,22 @@
 ;; URL: https://github.com/TxGVNN/gnus-summary-repo
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "25"))
+;; Keywords: Gnus, Repository
+
+;; This file is NOT part of GNU Emacs.
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; For a full copy of the GNU General Public License
+;; see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 ;; You have to be at Summary mode (defined in `gnus-sum.el') before
@@ -190,7 +206,8 @@ If N is nil, export at."
         (kill-buffer (current-buffer)))
       (setq gnus-newsgroup-active (gnus-activate-group group))
       (forward-line 1)
-      (gnus-summary-goto-article (cdr group-art) nil t))))
+      (if (cdr group-art)
+          (gnus-summary-goto-article (cdr group-art) nil t)))))
 
 (defun gnus-summary-repo-sync-deleted-files-base-directory (&optional directory)
   "Delete the file on Group, when this file was deleted on local DIRECTORY."
