@@ -1,4 +1,4 @@
-[[https://github.com/melpa/melpa/pull/6078][https://img.shields.io/badge/MELPA-queue-blueviolet.svg]]
+[[https://melpa.org/#/gnus-summary-repo][file:https://melpa.org/packages/gnus-summary-repo-badge.svg]]
 [[http://www.gnu.org/licenses/gpl-3.0.html][http://img.shields.io/:license-gpl3-blue.svg]]
 
 * Story
