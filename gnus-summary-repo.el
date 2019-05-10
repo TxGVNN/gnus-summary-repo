@@ -149,9 +149,11 @@ If N is nil, export at."
       (error "%s is not absolute path" file))
   (if (not subject)
       (setq subject (read-string "The subject: " (file-name-nondirectory file))))
-  (let ((group gnus-newsgroup-name)
-        atts not-newer header-from group-art)
-    (setq not-newer t)
+  (let* ((group gnus-newsgroup-name)
+         (not-save-yet t)
+         (not-newer t)
+         atts header-from group-art)
+    (gnus-summary-repo--keep-connection group)
     (unless (gnus-check-backend-function 'request-accept-article group)
       (error "%s does not support article importing" group))
     (or (file-readable-p file)
@@ -202,12 +204,15 @@ If N is nil, export at."
                 "Subject: " subject "\n"
                 "Date: " (message-make-date (nth 5 atts)) "\n"
                 "Hash: " (gnus-summary-repo--md5-file file) "\n\n")
-        (setq group-art (gnus-request-accept-article group nil t))
+        (setq not-save-yet
+              (ignore-errors (setq group-art (gnus-request-accept-article group nil t))))
         (kill-buffer (current-buffer)))
       (setq gnus-newsgroup-active (gnus-activate-group group))
       (forward-line 1)
       (if (cdr group-art)
-          (gnus-summary-goto-article (cdr group-art) nil t)))))
+          (gnus-summary-goto-article (cdr group-art) nil t)))
+    (unless not-save-yet
+      (gnus-summary-repo-import-file file subject))))
 
 (defun gnus-summary-repo-sync-deleted-files-base-directory (&optional directory)
   "Delete the file on Group, when this file was deleted on local DIRECTORY."
@@ -259,7 +264,7 @@ If REVERSE is non-nil, reverse the result."
 (defun gnus-summary-repo-import-directory-all (&optional directory)
   "Rescan summary group before call `gnus-summary-repo-import-directory' DIRECTORY."
   (interactive
-      (list (or gnus-summary-repo-dir-local
+   (list (or gnus-summary-repo-dir-local
              (read-directory-name "Select a directory to import: "))))
   (gnus-summary-rescan-group 9999)
   (gnus-summary-repo-import-directory directory))
@@ -267,7 +272,7 @@ If REVERSE is non-nil, reverse the result."
 (defun gnus-summary-repo-export-directory-all (&optional directory)
   "Rescan summary group before call `gnus-summary-repo-export-directory' DIRECTORY."
   (interactive
-      (list (or gnus-summary-repo-dir-local
+   (list (or gnus-summary-repo-dir-local
              (read-directory-name "Select a directory to export: "))))
   (gnus-summary-rescan-group 9999)
   (gnus-summary-repo-export-directory directory))
@@ -287,6 +292,14 @@ Recalculate if FORCE is not nil."
       (puthash file (with-temp-buffer (insert-file-contents-literally file)
                                       (md5 (buffer-string))) gnus-summary-repo-file-hash-cache)
     (gethash file gnus-summary-repo-file-hash-cache)))
+
+(defun gnus-summary-repo--keep-connection (group)
+  "Check and reconnect GROUP if disconnected."
+  (unless (gnus-server-opened (gnus-find-method-for-group group))
+    (gnus-remove-denial (gnus-find-method-for-group group))
+    (gnus-open-server (gnus-find-method-for-group group))
+    (gnus-request-group-scan group (gnus-get-info group))
+    (message "Reconnecting...")))
 
 (provide 'gnus-summary-repo)
 
