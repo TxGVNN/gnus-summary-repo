@@ -122,11 +122,12 @@ If N is nil, export at."
   "Export an attachment in an ARTICLE to a DIRECTORY."
   (if (not (equal major-mode 'gnus-summary-mode))
       (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
-  (let (dir-path fullpath subject)
-    (setq subject (gnus-summary-article-subject article))
+  (let ((subject (gnus-summary-article-subject article))
+        dir-path fullpath)
     (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
     (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
     (mkdir dir-path t)
+    (gnus-summary-repo--keep-connection gnus-newsgroup-name)
     (when (gnus-summary-repo--article-newer-than-file article fullpath)
       (message "Export %s" subject)
       (save-excursion
