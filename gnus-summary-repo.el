@@ -59,6 +59,11 @@
 (defvar gnus-summary-repo-file-hash-cache nil)
 (setq gnus-summary-repo-file-hash-cache (make-hash-table :test 'equal))
 
+(defun gnus-summary--check-mode ()
+  "Check right mode before do anything."
+  (unless (derived-mode-p 'gnus-summary-mode)
+    (error "You have to go to Summary Gnus (Example: 'Inbox' on your mail))")))
+
 (defun gnus-summary-repo-import-directory (&optional directory)
   "Import files in a folder to Group Imap.
 if DIRECTORY non-nil, export to DIRECTORY
@@ -67,11 +72,10 @@ It only affects on current summary buffer."
    (list (or gnus-summary-repo-dir-local
              (read-directory-name "Select a directory to import: "))))
 
-  (if (not (equal major-mode 'gnus-summary-mode))
-      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
+  (gnus-summary--check-mode)
 
-  (if (not (file-directory-p directory))
-      (error "%s is not directory" directory))
+  (unless (file-directory-p directory)
+    (error "%s is not a directory" directory))
 
   (let* ((directory-length (length (file-name-as-directory (expand-file-name directory))))
          subject)
@@ -89,8 +93,7 @@ It only affects on current summary buffer"
    (list (or gnus-summary-repo-dir-local
              (read-directory-name "Select a directory to export: "))))
 
-  (if (not (equal major-mode 'gnus-summary-mode))
-      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
+  (gnus-summary--check-mode)
 
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
@@ -104,14 +107,13 @@ If N is a positive number, save the N next articles.
 If N is a negative number, save the N previous articles.
 If N is nil, export at."
   (interactive "p")
-  (if (not (equal major-mode 'gnus-summary-mode))
-      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
-  (if (not directory)
-      (setq directory gnus-summary-repo-dir-local))
-  (if (not directory)
-      (setq directory (file-name-as-directory
-                       (expand-file-name
-                        (read-directory-name "Select a directory to export: ")))))
+  (gnus-summary--check-mode)
+  (setq directory
+        (or directory
+            gnus-summary-repo-dir-local
+            (file-name-as-directory
+             (expand-file-name
+              (read-directory-name "Select a directory to export: ")))))
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
   (let* ((articles (gnus-summary-work-articles n)))
@@ -120,14 +122,15 @@ If N is nil, export at."
 
 (defun gnus-summary-repo--export-file (article directory)
   "Export an attachment in an ARTICLE to a DIRECTORY."
-  (if (not (equal major-mode 'gnus-summary-mode))
-      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
+  (gnus-summary--check-mode)
   (let ((subject (gnus-summary-article-subject article))
         dir-path fullpath)
     (setq dir-path (file-name-directory (format "%s%s" (file-name-as-directory directory) subject )))
     (setq fullpath (format "%s%s" dir-path (file-name-nondirectory subject)))
     (mkdir dir-path t)
+
     (gnus-summary-repo--keep-connection gnus-newsgroup-name)
+
     (when (gnus-summary-repo--article-newer-than-file article fullpath)
       (message "Export %s" subject)
       (save-excursion
@@ -145,16 +148,17 @@ If N is nil, export at."
 (defun gnus-summary-repo-import-file (&optional file subject)
   "Import an arbitrary FILE with SUBJECT into a mail newsgroup."
   (interactive
-   (list (read-file-name "Select a fille to import: ")))
+   (list (read-file-name "Select a file to import: ")))
   (if (not (file-name-absolute-p file))
-      (error "%s is not absolute path" file))
-  (if (not subject)
-      (setq subject (read-string "The subject: " (file-name-nondirectory file))))
-  (let* ((group gnus-newsgroup-name)
-         (not-save-yet t)
-         (not-newer t)
-         atts header-from group-art)
+      (error "%s is not an absolute path" file))
+  (unless subject
+    (setq subject (read-string "The subject: " (file-name-nondirectory file))))
+  (let ((group gnus-newsgroup-name)
+        (not-newer t) (saved-article nil)
+        atts header-from group-art)
+
     (gnus-summary-repo--keep-connection group)
+
     (unless (gnus-check-backend-function 'request-accept-article group)
       (error "%s does not support article importing" group))
     (or (file-readable-p file)
@@ -184,7 +188,7 @@ If N is nil, export at."
           (setq articles (cdr articles)))))
 
     ;; Add new one
-    (when not-newer
+    (while (and not-newer (not saved-article))
       (message "Import %s" file)
       (with-current-buffer (gnus-get-buffer-create " *import file*")
         (erase-buffer)
@@ -205,27 +209,24 @@ If N is nil, export at."
                 "Subject: " subject "\n"
                 "Date: " (message-make-date (nth 5 atts)) "\n"
                 "Hash: " (gnus-summary-repo--md5-file file) "\n\n")
-        (setq not-save-yet
+        (setq saved-article
               (ignore-errors (setq group-art (gnus-request-accept-article group nil t))))
         (kill-buffer (current-buffer)))
       (setq gnus-newsgroup-active (gnus-activate-group group))
       (forward-line 1)
       (if (cdr group-art)
-          (gnus-summary-goto-article (cdr group-art) nil t)))
-    (unless not-save-yet
-      (gnus-summary-repo-import-file file subject))))
+          (gnus-summary-goto-article (cdr group-art) nil t)))))
 
 (defun gnus-summary-repo-sync-deleted-files-base-directory (&optional directory)
   "Delete the file on Group, when this file was deleted on local DIRECTORY."
   (interactive)
-  (if (not (equal major-mode 'gnus-summary-mode))
-      (error "You have to go to Summary Gnus (Ex: INBOX on your mail))"))
-  (if (not directory)
-      (setq directory gnus-summary-repo-dir-local))
-  (if (not directory)
-      (setq directory (file-name-as-directory
-                       (expand-file-name
-                        (read-directory-name "Select a directory to export: ")))))
+  (gnus-summary--check-mode)
+  (setq directory
+        (or directory
+            gnus-summary-repo-dir-local
+            (file-name-as-directory
+             (expand-file-name
+              (read-directory-name "Select a directory to export: ")))))
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
   (dolist (article gnus-newsgroup-limit)
@@ -298,9 +299,7 @@ Recalculate if FORCE is not nil."
   "Check and reconnect GROUP if disconnected."
   (unless (gnus-server-opened (gnus-find-method-for-group group))
     (gnus-remove-denial (gnus-find-method-for-group group))
-    (gnus-open-server (gnus-find-method-for-group group))
-    (gnus-request-group-scan group (gnus-get-info group))
-    (message "Reconnecting...")))
+    (gnus-open-server (gnus-find-method-for-group group))))
 
 (provide 'gnus-summary-repo)
 
