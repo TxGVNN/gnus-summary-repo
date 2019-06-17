@@ -68,11 +68,18 @@
   "Import files in a folder to Group Imap.
 if DIRECTORY non-nil, export to DIRECTORY
 It only affects on current summary buffer."
-  (interactive
-   (list (or gnus-summary-repo-dir-local
-             (read-directory-name "Select a directory to import: "))))
-
+  (interactive "p")
   (gnus-summary--check-mode)
+  (setq directory
+        (or (if (and (numberp directory) (eq directory 4))
+                (file-name-as-directory
+                 (expand-file-name
+                  (read-directory-name "Select a directory to import: "))))
+            (if (stringp directory) directory)
+            gnus-summary-repo-dir-local
+            (file-name-as-directory
+             (expand-file-name
+              (read-directory-name "Select a directory to import: ")))))
 
   (unless (file-directory-p directory)
     (error "%s is not a directory" directory))
@@ -89,11 +96,18 @@ It only affects on current summary buffer."
   "Export files Group Imap to a folder.
 if DIRECTORY non-nil, export to DIRECTORY
 It only affects on current summary buffer"
-  (interactive
-   (list (or gnus-summary-repo-dir-local
-             (read-directory-name "Select a directory to export: "))))
-
+  (interactive "p")
   (gnus-summary--check-mode)
+  (setq directory
+        (or (if (and (numberp directory) (eq directory 4))
+                (file-name-as-directory
+                 (expand-file-name
+                  (read-directory-name "Select a directory to export: "))))
+            (if (stringp directory) directory)
+            gnus-summary-repo-dir-local
+            (file-name-as-directory
+             (expand-file-name
+              (read-directory-name "Select a directory to export: ")))))
 
   (if (file-regular-p directory)
       (error "%s is not directory" directory))
