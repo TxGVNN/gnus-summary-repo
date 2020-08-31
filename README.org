@@ -1,7 +1,8 @@
+* gnus-summary-repo
 [[https://melpa.org/#/gnus-summary-repo][file:https://melpa.org/packages/gnus-summary-repo-badge.svg]]
 [[http://www.gnu.org/licenses/gpl-3.0.html][http://img.shields.io/:license-gpl3-blue.svg]]
 
-* Story
+** Story
 Someday, I join an IT company that is the first outsourcing company I work.
 They have many policies to protect the products. I'm not allowed to store anything in the internet service.
 It's fine, but they also don't provide the storage services for employees.
@@ -10,7 +11,7 @@ I need to store my notes, tips around work. Good, I found a solution to store my
 
 IMAP, that's it (~APPEND~ Command) https://tools.ietf.org/html/rfc3501#section-6.3.11 can handle this.
 
-* How did I implenment?
+** How did I implenment?
 
 I use GNUS to work around email. This is why I have this package.
 
@@ -18,7 +19,7 @@ I use GNUS to work around email. This is why I have this package.
 
 ~gnus-summary-repo~ will check which article or file are newer before importing/exporting base on creation date and MD5 hash
 
-* Usage
+** Usage
 
 ~M-x gnus-summary-repo-import-directory~  Import all files from a directory to the current Summary.
 
@@ -58,7 +59,7 @@ I use GNUS to work around email. This is why I have this package.
 (setq gnus-summary-repo-import-ignore '("^\.git.*"))
 #+END_SRC
 
-* Issues
+** Issues
 - Not yet support multiple repositories
 - You must manually enter Summary mode.
 - You must rescan Summary after importing/exporting
