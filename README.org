@@ -3,15 +3,15 @@
 [[http://www.gnu.org/licenses/gpl-3.0.html][http://img.shields.io/:license-gpl3-blue.svg]]
 
 ** Story
-Someday, I join an IT company that is the first outsourcing company I work.
+One day, I join an IT company that is the first outsourcing company I work.
 They have many policies to protect the products. I'm not allowed to store anything in the internet service.
 It's fine, but they also don't provide the storage services for employees.
 
-I need to store my notes, tips around work. Good, I found a solution to store my stuff. All of the company will provide to you an email account.
+I need to store my notes, tips around work. Good, I found a solution to store my stuff.  Any company always give you an email account.
 
 IMAP, that's it (~APPEND~ Command) https://tools.ietf.org/html/rfc3501#section-6.3.11 can handle this.
 
-** How did I implenment?
+** How did I implement?
 
 I use GNUS to work around email. This is why I have this package.
 
